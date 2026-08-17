@@ -20,7 +20,7 @@ $valorDev = str_replace(',', '.', $valorDev);
 $valor = (float) preg_replace('/[^0-9.\-]/', '', $valorDev); //esse preg_replace serve para remover caractereds que nao sejam numeros
 
 try {
-    if ($valor < 0) {
+    if ($valor <= 0) {
         throw new Exception("Informe um valor válido.");
     }
     if (empty($tipo) || empty($descricao)) {
