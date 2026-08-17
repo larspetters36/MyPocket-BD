@@ -21,7 +21,7 @@ $carteira = new Carteira($pdo);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
 </head>
 <body class="bg-light">
-
+//coiso do erro
 <div class="container py-5">
 <?php if (isset($_SESSION['erro'])): ?>
 
@@ -32,8 +32,8 @@ $carteira = new Carteira($pdo);
     <?php unset($_SESSION['erro']); ?>
 
 <?php endif; ?>
-    //parte do saldo, n esquecer
-    <div class="card border-0 shadow-sm mb-4">
+
+<div class="card border-0 shadow-sm mb-4">
         <div class="card-body text-center">
             <h6 class="text-muted mb-2">Saldo Atual</h6>
             <h1 class="fw-bold text-success">
@@ -44,6 +44,7 @@ $carteira = new Carteira($pdo);
 
     <div class="row">
 
+        <!-- Formulário -->
         <div class="col-lg-4 mb-4">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-primary text-white">
@@ -133,6 +134,7 @@ $carteira = new Carteira($pdo);
                                     <th>Valor</th>
                                     <th>Descrição</th>
                                     <th>Data</th>
+                                    <th>Ações</th>
                                 </tr>
                             </thead>
 
@@ -142,7 +144,7 @@ $carteira = new Carteira($pdo);
 
                                 <?php
                                     $entrada = $transacao['tipo'] === 'Entrada';
-                                    $datanov = (new DateTime($transacao['criado_em']))->format('d-m-Y H:i');
+                                    $dataFor = (new DateTime($transacao['criado_em']))->format('d-m-Y H:i');
                                 ?>
 
                                 <tr>
@@ -164,7 +166,20 @@ $carteira = new Carteira($pdo);
                                     </td>
 
                                     <td>
-                                        <?= $datanov ?>
+                                        <?= $dataFor ?>
+                                    </td>
+
+                                    <td>
+                                        <a href="editar.php?id=<?= $transacao['id'] ?>" class="btn btn-sm btn-outline-secondary">
+                                            Editar
+                                        </a>
+
+                                        <form method="POST" action="excluir.php" class="d-inline" onsubmit="return confirm('Excluir esta transação?');">
+                                            <input type="hidden" name="id" value="<?= $transacao['id'] ?>">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                Excluir
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
 

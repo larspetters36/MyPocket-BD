@@ -47,9 +47,38 @@ class Carteira {
     
     public function getTransacoes(): array {
         $stmt = $this->pdo->query(
-            "SELECT tipo, valor, descricao, criado_em FROM transacoes ORDER BY criado_em DESC, id DESC"
+            "SELECT id, tipo, valor, descricao, criado_em FROM transacoes ORDER BY criado_em DESC, id DESC"
         );
 
         return $stmt->fetchAll();
+    }
+
+    public function pegaTransacaoId(int $id): ?array {
+        $stmt = $this->pdo->prepare(
+            "SELECT id, tipo, valor, descricao, criado_em FROM transacoes WHERE id = :id"
+        );
+        $stmt->execute(['id' => $id]);
+
+        $transacao = $stmt->fetch();
+
+        return $transacao ?: null;
+    }
+
+    public function editarTransacao(int $id, string $tipo, float $valor, string $descricao): void {
+        $stmt = $this->pdo->prepare(
+            "UPDATE transacoes SET tipo = :tipo, valor = :valor, descricao = :descricao WHERE id = :id"
+        );
+
+        $stmt->execute([
+            'tipo' => $tipo,
+            'valor' => $valor,
+            'descricao' => $descricao,
+            'id' => $id,
+        ]);
+    }
+
+    public function removerTransacao(int $id): void {
+        $stmt = $this->pdo->prepare("DELETE FROM transacoes WHERE id = :id");
+        $stmt->execute(['id' => $id]);
     }
 }
