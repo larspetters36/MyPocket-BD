@@ -25,7 +25,7 @@ $carteira = new Carteira($pdo);
 <?php if (isset($_SESSION['erro'])): ?>
 
     <div class="alert alert-danger">
-        <?= $_SESSION['erro'] ?>
+        <?= htmlspecialchars($_SESSION['erro']) ?>
     </div>
 
     <?php unset($_SESSION['erro']); ?>
