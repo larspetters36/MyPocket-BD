@@ -14,13 +14,15 @@
 
 <body>
     <div>
-        <form>
-            <label for="email">Cadastrara</label>
+        <form action="processa_login.php" method="POST">
+            <label for="email">Cadastrar conta</label>
             <div>
-                <label for="email">Email Address</label>
+                <label for="nome">Nome Completo</label>
+                <input type="text" id="nome" name="nome">
+                <label for="email">Email</label>
                 <input type="email" id="email" name="email" placeholder="name@example.com" required>
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required />
+                <label for="password">Senha:</label>
+                <input type="password" id="senha" name="senha" required />
                 <button type="submit">Ciar conta</button>
             </div>
         </form>
