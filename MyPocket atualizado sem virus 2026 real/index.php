@@ -32,9 +32,8 @@ $carteira->processarRecorrencias();
     </div>
 
     <?php unset($_SESSION['erro']); ?>
-
-<?php endif; ?>
 //parte dos saldos
+<?php endif; ?>
 <div class="card border-0 shadow-sm mb-4">
         <div class="card-body text-center">
             <h6 class="text-muted mb-2">Saldo Atual</h6>
