@@ -116,14 +116,7 @@ class Carteira {
         return $stmt->fetchAll();
     }
 
-    /**
-     * "Motor" das recorrências: busca as que já venceram (proxima_execucao
-     * <= hoje) e gera, para CADA ocorrência vencida (não só a última), a
-     * transação correspondente — reaproveitando adicionarReceita/adicionarDespesa
-     * acima, então a checagem de saldo insuficiente vale aqui também. Se uma
-     * despesa recorrente não couber no saldo, aquela ocorrência é pulada
-     * (a recorrência continua ativa e tenta de novo na próxima execução).
-     */
+
     public function processarRecorrencias(): void {
         $hoje = new DateTime('today');
 
