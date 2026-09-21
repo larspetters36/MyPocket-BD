@@ -11,7 +11,6 @@ session_start();
 
 $carteira = new Carteira($pdo);
 
-// Efetiva qualquer ocorrência de recorrência vencida antes de exibir a tela.
 $carteira->processarRecorrencias();
 ?>
 
