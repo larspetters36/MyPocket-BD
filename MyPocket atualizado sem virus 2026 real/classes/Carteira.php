@@ -120,13 +120,15 @@ class Carteira {
     public function processarRecorrencias(): void {
         $hoje = new DateTime('today');
 
-        $stmt = $this->pdo->query(
-            "SELECT * FROM recorrencias WHERE ativa = 1 AND proxima_execucao <= CURDATE()"
-        );
+        $stmt = $this->pdo->query("SELECT * FROM recorrencias WHERE ativa = 1");
 
         foreach ($stmt->fetchAll() as $r) {
             $proxima = new DateTime($r['proxima_execucao']);
             $limite = (new DateTime($r['inicio']))->modify('+' . (int) round((float) $r['duracao']) . ' months');
+
+            if ($proxima > $hoje) {
+                continue; 
+            }
 
             while ($proxima <= $hoje && $proxima <= $limite) {
                 try {
@@ -144,7 +146,6 @@ class Carteira {
                         );
                     }
                 } catch (Exception $e) {
-                    // saldo insuficiente para essa ocorrência específica: pula e segue
                 }
 
                 $proxima = $this->proximaData($proxima, $r['tipo_recorrencia']);
@@ -181,25 +182,59 @@ class Carteira {
 
         return $nova;
     }
-    public function projetarSaldoFimDoMes(): float {
-    $hoje = new DateTime('today');
-    $fimDoMes = new DateTime($hoje->format('Y-m-t'));//nao esquwcer que esse t serve como quantidade de dias, entao ao usar, o dia sempre seria o ultimo do mes
-    $projecao = $this->getSaldo();
 
-    $stmt = $this->pdo->query("SELECT * FROM recorrencias WHERE ativa = 1");
+   
+    public function saldoAte(DateTime $data): float {
+        $hoje = new DateTime('today');
+        $projecao = $this->getSaldo();
 
-    foreach ($stmt->fetchAll() as $r) {
-        $proxima = new DateTime($r['proxima_execucao']);
-        $limite = (new DateTime($r['inicio']))->modify('+' . (int) round((float) $r['duracao']) . ' months');
+        $stmt = $this->pdo->query("SELECT * FROM recorrencias WHERE ativa = 1");
 
-        while ($proxima <= $fimDoMes && $proxima <= $limite) {
-            if ($proxima >= $hoje) {
-                $projecao += $r['tipo'] === 'entrada' ? (float) $r['valor'] : -(float) $r['valor'];
+        foreach ($stmt->fetchAll() as $r) {
+            $proxima = new DateTime($r['proxima_execucao']);
+            $limite = (new DateTime($r['inicio']))->modify('+' . (int) round((float) $r['duracao']) . ' months');
+
+            while ($proxima <= $data && $proxima <= $limite) {
+                if ($proxima >= $hoje) {
+                    $projecao += $r['tipo'] === 'entrada' ? (float) $r['valor'] : -(float) $r['valor'];
+                }
+                $proxima = $this->proximaData($proxima, $r['tipo_recorrencia']);
             }
-            $proxima = $this->proximaData($proxima, $r['tipo_recorrencia']);
         }
+
+        return $projecao;
     }
 
-    return $projecao;
-}
+    public function fimMesSaldo(): float {
+        $fimMes = new DateTime((new DateTime('today'))->format('Y-m-t'));
+        return $this->saldoAte($fimMes);
+    }
+
+ 
+    private function saldoRealAte(DateTime $data): float {
+        $stmt = $this->pdo->prepare(
+            "SELECT COALESCE(SUM(CASE WHEN tipo = 'Entrada' THEN valor ELSE -valor END), 0) AS saldo
+             FROM transacoes WHERE criado_em <= :data"
+        );
+        $stmt->execute(['data' => $data->format('Y-m-d 23:59:59')]);
+
+        return (float) $stmt->fetch()['saldo'];
+    }
+
+    public function projetarMes(int $ano): array {
+        $hoje = new DateTime('today');
+        $projecoes = [];
+
+        for ($mes = 1; $mes <= 12; $mes++) {
+            $fimMes = new DateTime(sprintf('%04d-%02d-01', $ano, $mes));
+            $fimMes->modify('last day of this month');
+
+            $projecoes[$mes] = $fimMes < $hoje
+                ? $this->saldoRealAte($fimMes)
+                : $this->saldoAte($fimMes);
+        }
+
+        return $projecoes;
+    }
+    
 }
